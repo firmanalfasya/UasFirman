@@ -22,6 +22,8 @@ uuid = { version = "1.8", features = ["v4", "serde"] }
 dotenvy = "0.15"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+dotenvy = "0.15"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 csv = "1.3"
 validator = { version = "0.18", features = ["derive"] }
 rand = "0.8"
