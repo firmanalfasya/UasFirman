@@ -1,0 +1,21 @@
+# Rust build
+/target
+Cargo.lock
+
+# Environment variables
+.env
+*.env.local
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Temporary
+prd_extracted.txt
+extract_prd.py
+stitch_extracted/
+

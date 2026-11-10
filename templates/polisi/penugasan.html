@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Penugasan Personel Lapangan - Satlantas Polresta Bandar Lampung{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+            <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
+                <span>Satlantas Polresta</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span class="text-brand-navy font-semibold">Penugasan Personel Lapangan</span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                Disposisi Penugasan Personel &amp; Tindakan Penguraian
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">
+                Penerbitan surat tugas lapangan untuk penertiban kemacetan, buka-tutup jalur, dan patroli terpadu.
+            </p>
+        </div>
+
+        <button onclick="document.getElementById('modal-tambah-penugasan').classList.remove('hidden')" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-brand-navy hover:bg-blue-900 text-white text-xs font-semibold shadow-sm transition self-start sm:self-auto">
+            <span class="material-symbols-outlined text-[18px]">add_task</span>
+            <span>Terbitkan Tugas Baru</span>
+        </button>
+    </div>
+
+    <!-- Alert Sukses jika ada -->
+    {% if let Some(msg) = message %}
+    <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-800 flex items-center gap-2">
+        <span class="material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span>
+        <span>{{ msg }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Tabel Tindakan Penanganan -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-700">Daftar Penugasan Aktif &amp; Selesai</span>
+            <span class="font-mono text-[11px] text-slate-400">Total: {{ tindakan_list.len() }} Penugasan</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                    <tr>
+                        <th class="py-3.5 px-4">Waktu Tugas</th>
+                        <th class="py-3.5 px-4">Lokasi Titik Macet</th>
+                        <th class="py-3.5 px-4">Jenis Tindakan</th>
+                        <th class="py-3.5 px-4">Personel Ditugaskan</th>
+                        <th class="py-3.5 px-4">Status Penugasan</th>
+                        <th class="py-3.5 px-4">Deskripsi / Instruksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for t in tindakan_list %}
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <td class="py-3 px-4 font-mono text-slate-600 whitespace-nowrap">{{ t.waktu_tindakan.format("%Y-%m-%d %H:%M") }}</td>
+                        <td class="py-3 px-4 font-bold text-slate-900">{{ t.ruas_nama }}</td>
+                        <td class="py-3 px-4 font-semibold text-brand-navy">{{ t.jenis }}</td>
+                        <td class="py-3 px-4 font-medium text-slate-800">{{ t.petugas_nama }}</td>
+                        <td class="py-3 px-4">
+                            {% if t.status_tindakan == "sedang_berjalan" %}
+                                <span class="px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold">Sedang Berjalan</span>
+                            {% else if t.status_tindakan == "ditugaskan" %}
+                                <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">Ditugaskan</span>
+                            {% else %}
+                                <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Selesai</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-slate-600 max-w-sm truncate" title="{{ t.deskripsi.as_deref().unwrap_or("-") }}">
+                            {{ t.deskripsi.as_deref().unwrap_or("-") }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Terbitkan Tugas Baru -->
+<div id="modal-tambah-penugasan" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-6">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+            <h2 class="text-sm font-bold text-slate-900">Terbitkan Penugasan Personel Baru</h2>
+            <button type="button" onclick="document.getElementById('modal-tambah-penugasan').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <form action="/polisi/penugasan" method="POST" class="space-y-3.5 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="titik_id">Pilih Titik Kemacetan</label>
+                <select id="titik_id" name="titik_id" required class="w-full rounded-lg border-slate-300 text-xs px-3 py-2">
+                    {% for tm in titik_list %}
+                        <option value="{{ tm.id }}">{{ tm.ruas_nama }} ({{ tm.kepadatan }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="jenis">Jenis Rekayasa / Tindakan</label>
+                <select id="jenis" name="jenis" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2">
+                    <option value="Pengaturan Manual Lalu Lintas">Pengaturan Manual Lalu Lintas</option>
+                    <option value="Buka Tutup Jalur (Contraflow)">Buka Tutup Jalur (Contraflow)</option>
+                    <option value="Penertiban Parkir Liar & PKL">Penertiban Parkir Liar & PKL</option>
+                    <option value="Evakuasi Kendaraan Mogok / Laka">Evakuasi Kendaraan Mogok / Laka</option>
+                    <option value="Pengalihan Arus Jalur Alternatif">Pengalihan Arus Jalur Alternatif</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="status_tindakan">Status Awal</label>
+                <select id="status_tindakan" name="status_tindakan" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2">
+                    <option value="sedang_berjalan">Sedang Berjalan (Personel OTW / di Lokasi)</option>
+                    <option value="ditugaskan">Ditugaskan (Surat Tugas Diterbitkan)</option>
+                    <option value="selesai">Selesai</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="deskripsi">Instruksi Khusus &amp; Jumlah Personel</label>
+                <textarea id="deskripsi" name="deskripsi" rows="3" placeholder="Contoh: Tempatkan 3 personel di Simpang Kedaton untuk memprioritaskan arus dari Teuku Umar..." class="w-full rounded-lg border-slate-300 text-xs px-3 py-2"></textarea>
+            </div>
+            <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button type="button" onclick="document.getElementById('modal-tambah-penugasan').classList.add('hidden')" class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium">Batal</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-brand-navy hover:bg-blue-900 text-white font-medium">Kirim Penugasan</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

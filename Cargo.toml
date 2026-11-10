@@ -1,0 +1,31 @@
+[package]
+name = "smarttraffic"
+version = "1.0.0"
+edition = "2021"
+authors = ["Firman Alfasya Arief", "Dr. Erliyan Redy Susanto, M.Kom"]
+description = "Sistem Informasi Pemantauan Lalu Lintas Kota Bandar Lampung untuk Dinas Perhubungan dan Satlantas Polresta"
+
+[dependencies]
+axum = { version = "0.7", features = ["macros", "multipart"] }
+tokio = { version = "1.38", features = ["full"] }
+tower = { version = "0.4", features = ["util"] }
+tower-http = { version = "0.5", features = ["fs", "trace", "cors", "set-header"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "json", "macros", "migrate"] }
+askama = { version = "0.12", features = ["with-axum"] }
+askama_axum = "0.4"
+argon2 = "0.5"
+jsonwebtoken = "9"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.8", features = ["v4", "serde"] }
+dotenvy = "0.15"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+csv = "1.3"
+validator = { version = "0.18", features = ["derive"] }
+rand = "0.8"
+
+[dev-dependencies]
+reqwest = { version = "0.12", features = ["json"] }
+

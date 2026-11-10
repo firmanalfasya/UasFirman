@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Log Audit & Keamanan - SmartTraffic Bandar Lampung{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+            <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
+                <span>Administrasi</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span class="text-brand-navy font-semibold">Log Audit &amp; Keamanan</span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                Rekaman Jejak Aktivitas &amp; Integritas Sistem
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">
+                Audit trail seluruh aktivitas pengguna, perubahan data kemacetan, dan peristiwa keamanan sistem.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Integritas Data Terverifikasi
+            </span>
+        </div>
+    </div>
+
+    <!-- Tabel Log Audit -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-700">Total <strong>{{ audit_list.len() }}</strong> rekaman log audit tercatat</span>
+            <span class="font-mono text-[11px] text-slate-400">Pencatatan Otomatis PostgreSQL</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                    <tr>
+                        <th class="py-3.5 px-4">Waktu (WIB)</th>
+                        <th class="py-3.5 px-4">Nama Pengguna</th>
+                        <th class="py-3.5 px-4">Peran</th>
+                        <th class="py-3.5 px-4">Aksi / Operasi</th>
+                        <th class="py-3.5 px-4">Entitas Terkait</th>
+                        <th class="py-3.5 px-4">Detail Keterangan</th>
+                        <th class="py-3.5 px-4">IP Address</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for a in audit_list %}
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <td class="py-3 px-4 font-mono text-slate-600 whitespace-nowrap">{{ a.waktu.format("%Y-%m-%d %H:%M:%S") }}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">{{ a.pengguna_nama.as_deref().unwrap_or("Sistem") }}</td>
+                        <td class="py-3 px-4">
+                            <span class="uppercase text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                                {{ a.peran_nama.as_deref().unwrap_or("-") }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 font-bold text-brand-navy">{{ a.aksi }}</td>
+                        <td class="py-3 px-4 text-slate-700">{{ a.entitas.as_deref().unwrap_or("-") }}</td>
+                        <td class="py-3 px-4 text-slate-600 max-w-sm truncate" title="{{ a.detail.as_deref().unwrap_or("-") }}">
+                            {{ a.detail.as_deref().unwrap_or("-") }}
+                        </td>
+                        <td class="py-3 px-4 font-mono text-slate-400">{{ a.ip_address.as_deref().unwrap_or("127.0.0.1") }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

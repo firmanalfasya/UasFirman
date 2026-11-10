@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Laporan Kejadian Lapangan - Satlantas Polresta Bandar Lampung{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+
+    <!-- Header -->
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
+            <span>Satlantas Polresta</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="text-brand-navy font-semibold">Laporan Kejadian Lapangan</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Pelaporan Insiden Lapangan &amp; Kendala Kelancaran Arus
+        </h1>
+        <p class="text-xs text-slate-500 mt-0.5">
+            Digunakan oleh personel patroli lapangan untuk menginput kendala (kecelakaan, pohon tumbang, truk mogok) secara cepat.
+        </p>
+    </div>
+
+    <!-- Alert Sukses jika ada -->
+    {% if let Some(msg) = message %}
+    <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-800 flex items-center gap-2">
+        <span class="material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span>
+        <span>{{ msg }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Form Lapor Kejadian Lapangan -->
+    <div class="max-w-2xl bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <form action="/polisi/laporan-lapangan" method="POST" class="space-y-4 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="ruas_id">Lokasi Ruas Jalan Protokol</label>
+                <select id="ruas_id" name="ruas_id" required class="w-full rounded-lg border-slate-300 text-xs px-3 py-2.5">
+                    {% for r in ruas_list %}
+                        <option value="{{ r.id }}">{{ r.nama }} (Kec. {{ r.kecamatan_nama }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1" for="kepadatan">Dampak Terhadap Kepadatan</label>
+                    <select id="kepadatan" name="kepadatan" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2">
+                        <option value="macet_parah" selected>Macet Parah (Arus Terhenti)</option>
+                        <option value="macet">Macet (Melambat Signifikan)</option>
+                        <option value="padat">Padat Merayap</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1" for="penyebab_id">Penyebab Insiden</label>
+                    <select id="penyebab_id" name="penyebab_id" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2">
+                        {% for p in penyebab_list %}
+                            <option value="{{ p.id }}">{{ p.nama }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1" for="panjang_antrean_meter">Estimasi Ekor Antrean (Meter)</label>
+                    <input type="number" id="panjang_antrean_meter" name="panjang_antrean_meter" value="400" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2 font-mono"/>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1" for="kecepatan_rata_rata_kmh">Kecepatan Arus (km/h)</label>
+                    <input type="number" id="kecepatan_rata_rata_kmh" name="kecepatan_rata_rata_kmh" value="8" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2 font-mono"/>
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="foto_url">Foto Kejadian / Dokumentasi (Opsional URL)</label>
+                <input type="url" id="foto_url" name="foto_url" placeholder="https://..." class="w-full rounded-lg border-slate-300 text-xs px-3 py-2"/>
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="catatan">Laporan Situasi &amp; Kebutuhan Dukungan</label>
+                <textarea id="catatan" name="catatan" rows="3" placeholder="Jelaskan kebutuhan ambulans, mobil derek, atau penambahan regu buka-tutup..." class="w-full rounded-lg border-slate-300 text-xs px-3 py-2"></textarea>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+                <a href="/polisi/operasional" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50">Batal</a>
+                <button type="submit" class="px-5 py-2.5 rounded-lg bg-brand-navy hover:bg-blue-900 text-white font-semibold transition">
+                    Kirim Laporan Lapangan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

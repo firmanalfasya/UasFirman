@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Rekomendasi Penanganan Lalu Lintas - Dishub Bandar Lampung{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+
+    <!-- Header -->
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
+            <span>Dinas Perhubungan</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="text-brand-navy font-semibold">Rekomendasi Penanganan</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Rekomendasi Rekayasa Lalu Lintas &amp; Intervensi ATCS
+        </h1>
+        <p class="text-xs text-slate-500 mt-0.5">
+            Analisis otomatis berbasis kepadatan ruas jalan, waktu kejadian, dan panjang antrean kendaraan Kota Bandar Lampung.
+        </p>
+    </div>
+
+    <!-- Rekomendasi Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+        <!-- Rekomendasi 1: Simpang MBK & Teuku Umar -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                    <span class="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 uppercase">Prioritas Darurat 1</span>
+                    <span class="font-mono text-slate-400">Kec. Kedaton</span>
+                </div>
+                <h2 class="text-sm font-bold text-slate-900 mb-1">Koridor Simpang MBK (Mall Boemi Kedaton)</h2>
+                <p class="text-slate-600 mb-3">
+                    Antrean mencapai 450 meter dengan kecepatan rata-rata 8-12 km/h pada jam sibuk.
+                </p>
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
+                    <h3 class="font-bold text-brand-navy">Tindakan Rekayasa yang Disarankan:</h3>
+                    <ul class="list-disc list-inside space-y-1 text-slate-700">
+                        <li>Perpanjang durasi lampu hijau (Green Time) dari arah Rajabasa menuju Tanjung Karang sebesar +15 detik di Traffic Light MBK.</li>
+                        <li>Sterilisasi lajur kiri dari kendaraan ngetem dan parkir on-street depan pertokoan Kedaton.</li>
+                        <li>Alihkan arus kendaraan kecil menuju jalur alternatif Jl. Untung Suropati atau Bypass Soekarno Hatta.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-slate-500">Estimasi Penguraian: <strong>25 Menit</strong></span>
+                <span class="text-emerald-700 font-bold">Siap Diterapkan</span>
+            </div>
+        </div>
+
+        <!-- Rekomendasi 2: Kawasan Pasar Bambu Kuning -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                    <span class="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 uppercase">Prioritas Darurat 2</span>
+                    <span class="font-mono text-slate-400">Kec. Tanjung Karang Pusat</span>
+                </div>
+                <h2 class="text-sm font-bold text-slate-900 mb-1">Jl. Raden Intan - Pos Pasar Tengah / Bambu Kuning</h2>
+                <p class="text-slate-600 mb-3">
+                    Kepadatan parah akibat volume pejalan kaki menyeberang, angkutan umum menaikkan penumpang, dan penyempitan simpang.
+                </p>
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
+                    <h3 class="font-bold text-brand-navy">Tindakan Rekayasa yang Disarankan:</h3>
+                    <ul class="list-disc list-inside space-y-1 text-slate-700">
+                        <li>Tempatkan 2 regu patroli terpadu Dishub &amp; Satlantas untuk buka-tutup simpang Bambu Kuning.</li>
+                        <li>Arahkan arus dari Jl. Kotaraja lurus menuju Jl. Kartini untuk mengurangi beban pertemuan Jl. Raden Intan.</li>
+                        <li>Tertibkan pedagang kaki lima dan parkir liar di bawah jembatan penyeberangan orang (JPO).</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-slate-500">Estimasi Penguraian: <strong>35 Menit</strong></span>
+                <span class="text-emerald-700 font-bold">Siap Diterapkan</span>
+            </div>
+        </div>
+
+        <!-- Rekomendasi 3: Simpang Kalibalok Bypass -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                    <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 uppercase">Tindakan Khusus</span>
+                    <span class="font-mono text-slate-400">Kec. Sukarame</span>
+                </div>
+                <h2 class="text-sm font-bold text-slate-900 mb-1">Jl. Soekarno Hatta By Pass (Simpang Kalibalok)</h2>
+                <p class="text-slate-600 mb-3">
+                    Hambatan kendaraan berat / truk patah as di lajur kiri jalan nasional.
+                </p>
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
+                    <h3 class="font-bold text-brand-navy">Tindakan Rekayasa yang Disarankan:</h3>
+                    <ul class="list-disc list-inside space-y-1 text-slate-700">
+                        <li>Kirim mobil derek kapasitas besar TMC Dishub ke titik koordinat (-5.394200, 105.292500).</li>
+                        <li>Pasang rambu darurat segitiga pengaman 50 meter sebelum lokasi insiden truk mogok.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-slate-500">Estimasi Derek: <strong>15 Menit</strong></span>
+                <span class="text-blue-700 font-bold">Dalam Koordinasi</span>
+            </div>
+        </div>
+
+        <!-- Rekomendasi 4: Bundaran Gajah Tugu Adipura -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                    <span class="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded uppercase">Pengaturan Rutin</span>
+                    <span class="font-mono text-slate-400">Kec. Enggal</span>
+                </div>
+                <h2 class="text-sm font-bold text-slate-900 mb-1">Bundaran Tugu Adipura (Pusat Kota)</h2>
+                <p class="text-slate-600 mb-3">
+                    Pertemuan arus 5 cabang jalan (Sudirman, Raden Intan, A. Yani, Diponegoro) pada jam pulang kerja sore.
+                </p>
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2">
+                    <h3 class="font-bold text-brand-navy">Tindakan Rekayasa yang Disarankan:</h3>
+                    <ul class="list-disc list-inside space-y-1 text-slate-700">
+                        <li>Sinkronkan fase lampu lalu lintas adaptif ATCS untuk memprioritaskan pelepasan arus dari Jl. Jenderal Sudirman.</li>
+                        <li>Penempatan personel di pulau jalan untuk melarang kendaraan berhenti di area bundaran.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-slate-500">Estimasi Penguraian: <strong>20 Menit</strong></span>
+                <span class="text-emerald-700 font-bold">Terjadwal</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

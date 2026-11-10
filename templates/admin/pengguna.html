@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Manajemen Pengguna - SmartTraffic Bandar Lampung{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+
+    <!-- Header & Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+            <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
+                <span>Administrasi</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span class="text-brand-navy font-semibold">Manajemen Pengguna</span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                Kelola Akun &amp; Hak Akses Pengguna
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">
+                Kontrol RBAC: Admin Sistem, Petugas Dishub, Satlantas Polresta, dan Pimpinan Daerah.
+            </p>
+        </div>
+
+        <button onclick="document.getElementById('modal-tambah-user').classList.remove('hidden')" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-brand-navy hover:bg-blue-900 text-white text-xs font-semibold shadow-sm transition self-start sm:self-auto">
+            <span class="material-symbols-outlined text-[18px]">person_add</span>
+            <span>Tambah Pengguna Baru</span>
+        </button>
+    </div>
+
+    <!-- Alert Sukses / Info jika ada -->
+    {% if let Some(msg) = message %}
+    <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800 flex items-center gap-2">
+        <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span>
+        <span>{{ msg }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Tabel Daftar Pengguna -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                    <tr>
+                        <th class="py-3.5 px-4">Nama Lengkap</th>
+                        <th class="py-3.5 px-4">Nama Pengguna / NIP</th>
+                        <th class="py-3.5 px-4">Email Dinas</th>
+                        <th class="py-3.5 px-4">Peran Sistem</th>
+                        <th class="py-3.5 px-4">Status Akun</th>
+                        <th class="py-3.5 px-4">Terdaftar Sejak</th>
+                        <th class="py-3.5 px-4 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for u in users %}
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-brand-navy text-[11px]">
+                                {{ loop.index }}
+                            </div>
+                            <span>{{ u.nama }}</span>
+                        </td>
+                        <td class="py-3.5 px-4 font-mono text-slate-700">{{ u.username }}</td>
+                        <td class="py-3.5 px-4 text-slate-600">{{ u.email }}</td>
+                        <td class="py-3.5 px-4">
+                            {% if u.peran_nama == "admin" %}
+                                <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[10px] font-bold">ADMIN SISTEM</span>
+                            {% else if u.peran_nama == "petugas_dishub" %}
+                                <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold">PETUGAS DISHUB</span>
+                            {% else if u.peran_nama == "polantas" %}
+                                <span class="px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold">SATLANTAS POLRESTA</span>
+                            {% else %}
+                                <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">PIMPINAN DAERAH</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3.5 px-4">
+                            {% if u.aktif %}
+                                <span class="inline-flex items-center gap-1 text-emerald-700 font-semibold text-[11px]">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1 text-rose-700 font-semibold text-[11px]">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Nonaktif
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3.5 px-4 font-mono text-slate-500">{{ u.dibuat_pada.format("%Y-%m-%d") }}</td>
+                        <td class="py-3.5 px-4 text-right">
+                            <form action="/admin/pengguna/{{ u.id }}/toggle" method="POST" class="inline">
+                                <button type="submit" class="px-2.5 py-1 rounded border border-slate-200 hover:bg-slate-100 text-[11px] font-medium text-slate-700 transition">
+                                    {% if u.aktif %}Nonaktifkan{% else %}Aktifkan{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Pengguna Baru -->
+<div id="modal-tambah-user" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-6">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+            <h2 class="text-sm font-bold text-slate-900">Tambah Akun Pengguna Baru</h2>
+            <button type="button" onclick="document.getElementById('modal-tambah-user').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <form action="/admin/pengguna" method="POST" class="space-y-3.5 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="nama">Nama Lengkap &amp; Gelar</label>
+                <input type="text" id="nama" name="nama" required placeholder="Contoh: Briptu Rian, S.H." class="w-full rounded-lg border-slate-300 text-xs px-3 py-2"/>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="username">Nama Pengguna / NIP / NRP</label>
+                <input type="text" id="username" name="username" required placeholder="Contoh: briptu_rian" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2 font-mono"/>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="email">Email Dinas Resmi</label>
+                <input type="email" id="email" name="email" required placeholder="rian@smarttraffic.bandarlampung.go.id" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2"/>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="peran_id">Peran Sistem (RBAC)</label>
+                <select id="peran_id" name="peran_id" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2">
+                    <option value="2">Petugas Dishub (Operator &amp; Lapangan)</option>
+                    <option value="3">Satlantas Polresta (Pengatur Arus &amp; Patroli)</option>
+                    <option value="4">Pimpinan Daerah (Read-Only Eksekutif)</option>
+                    <option value="1">Admin Sistem</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="password">Kata Sandi Sementara</label>
+                <input type="password" id="password" name="password" required placeholder="Minimal 8 karakter" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2"/>
+            </div>
+            <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button type="button" onclick="document.getElementById('modal-tambah-user').classList.add('hidden')" class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium">Batal</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-brand-navy hover:bg-blue-900 text-white font-medium">Simpan Pengguna</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

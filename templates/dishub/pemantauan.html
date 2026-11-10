@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Pemantauan Lalu Lintas - Dinas Perhubungan Bandar Lampung{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+            <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
+                <span>Dinas Perhubungan</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span class="text-brand-navy font-semibold">Dashboard Pemantauan Lalu Lintas</span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                Pusat Kendali Operasional ATCS Dishub
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">
+                Pengawasan langsung arus kendaraan pada 15 titik pantau protokol Kota Bandar Lampung.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+            <a href="/dishub/input-kemacetan" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-brand-navy hover:bg-blue-900 text-white text-xs font-semibold shadow-sm transition">
+                <span class="material-symbols-outlined text-[18px]">add_location_alt</span>
+                <span>Laporkan Titik Macet</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Metric Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Macet Parah</span>
+                <p class="text-lg font-extrabold text-rose-600">{{ ringkasan.macet_parah }} Lokasi</p>
+            </div>
+            <span class="w-3 h-3 rounded-full bg-red-600"></span>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Macet</span>
+                <p class="text-lg font-extrabold text-orange-600">{{ ringkasan.macet }} Lokasi</p>
+            </div>
+            <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Padat</span>
+                <p class="text-lg font-extrabold text-amber-600">{{ ringkasan.padat }} Lokasi</p>
+            </div>
+            <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Lancar</span>
+                <p class="text-lg font-extrabold text-emerald-600">{{ ringkasan.lancar }} Lokasi</p>
+            </div>
+            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+        </div>
+    </div>
+
+    <!-- Peta Pantauan Real-Time & CCTV Preview -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Interactive Map (2 Kolom) -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-brand-navy text-[20px]">pin_drop</span>
+                    <h2 class="font-bold text-slate-800 text-sm">Peta Geospasial Kemacetan Arus Aktif</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-xs font-mono text-emerald-700 font-semibold">TMC Live Sensor</span>
+                </div>
+            </div>
+            <div id="dishub-map" class="w-full h-96 rounded-lg border border-slate-200 z-10"></div>
+            <div class="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2 text-xs text-slate-500">
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#DC2626]"></span> Macet Parah</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#EA580C]"></span> Macet</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#EAB308]"></span> Padat Merayap</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#16A34A]"></span> Lancar</span>
+                </div>
+                <span class="font-mono text-[11px]">Klik marker untuk lihat detail &amp; perbarui status</span>
+            </div>
+        </div>
+
+        <!-- CCTV Streaming Box & Status Koridor Kritis -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-brand-teal text-[20px]">videocam</span>
+                        <h2 class="font-bold text-slate-800 text-sm">Pratinjau CCTV Simpang MBK</h2>
+                    </div>
+                    <span class="text-[10px] font-mono bg-slate-900 text-teal-400 px-2 py-0.5 rounded font-bold">CAM-BDL-02</span>
+                </div>
+                <!-- CCTV Frame -->
+                <div class="relative rounded-lg overflow-hidden border border-slate-200 shadow-inner bg-slate-900 aspect-video flex items-center justify-center">
+                    <img src="https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=600&auto=format&fit=crop&q=60" alt="CCTV Simpang MBK" class="w-full h-full object-cover opacity-85"/>
+                    <div class="absolute top-2 left-2 bg-slate-950/80 px-2 py-1 rounded text-[10px] font-mono text-emerald-400 flex items-center gap-1.5 border border-emerald-500/30">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        LIVE 1080p
+                    </div>
+                    <div class="absolute bottom-2 left-2 right-2 bg-slate-950/80 px-2.5 py-1 rounded text-[10px] text-white flex justify-between font-mono">
+                        <span>MBK Kedaton</span>
+                        <span class="text-amber-400">12 KM/JAM</span>
+                    </div>
+                </div>
+
+                <!-- Petugas Patroli Aktif -->
+                <div class="mt-4 pt-3 border-t border-slate-100">
+                    <h3 class="text-xs font-bold text-slate-800 mb-2">Petugas Siaga di Ruang Kendali</h3>
+                    <div class="flex items-center gap-2.5 p-2 rounded-lg bg-blue-50/70 border border-blue-100">
+                        <div class="w-8 h-8 rounded-full bg-brand-navy text-white flex items-center justify-center font-bold text-xs">
+                            SW
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-900 leading-tight">Sari Wulandari, S.Tr.Tra</p>
+                            <p class="text-[10px] text-slate-500">Operator Shift Siang TMC Dishub</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100">
+                <a href="/dishub/rekomendasi" class="inline-flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-brand-teal text-xs font-bold transition">
+                    <span class="material-symbols-outlined text-[18px]">alt_route</span>
+                    <span>Lihat Rekomendasi Rekayasa Jalur</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daftar Titik Pantau dengan Tombol Cepat Ubah Status -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <h2 class="font-bold text-slate-900 text-sm">Status Pantauan Titik Kemacetan Lapangan</h2>
+                <p class="text-xs text-slate-500">Klik "Ubah Status" untuk memperbarui penanganan dan tindakan penertiban.</p>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+                <span class="px-2.5 py-1 rounded-full bg-slate-100 font-semibold text-slate-700">Total 15 Koridor</span>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                    <tr>
+                        <th class="py-3.5 px-4">Ruas Jalan &amp; Kecamatan</th>
+                        <th class="py-3.5 px-4">Tingkat Kepadatan</th>
+                        <th class="py-3.5 px-4">Status Alur</th>
+                        <th class="py-3.5 px-4">Panjang Antrean</th>
+                        <th class="py-3.5 px-4">Kecepatan</th>
+                        <th class="py-3.5 px-4">Penyebab</th>
+                        <th class="py-3.5 px-4 text-right">Tindakan / Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for t in titik_list %}
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <td class="py-3.5 px-4">
+                            <span class="block font-bold text-slate-900">{{ t.ruas_nama }}</span>
+                            <span class="text-[11px] text-slate-500">Kec. {{ t.kecamatan_nama }}</span>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            {% if t.kepadatan == "macet_parah" %}
+                                <span class="px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-bold">Macet Parah</span>
+                            {% else if t.kepadatan == "macet" %}
+                                <span class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 text-[10px] font-bold">Macet</span>
+                            {% else if t.kepadatan == "padat" %}
+                                <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">Padat</span>
+                            {% else %}
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Lancar</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3.5 px-4">
+                            {% if t.status == "ditangani" %}
+                                <span class="px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold">Ditangani</span>
+                            {% else if t.status == "dilaporkan" %}
+                                <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">Dilaporkan</span>
+                            {% else %}
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Selesai</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3.5 px-4 font-mono font-semibold text-rose-600">{{ t.panjang_antrean_meter }}m</td>
+                        <td class="py-3.5 px-4 font-mono text-slate-700">{{ t.kecepatan_rata_rata_kmh }} km/h</td>
+                        <td class="py-3.5 px-4 text-slate-600 max-w-xs truncate">{{ t.penyebab_nama }}</td>
+                        <td class="py-3.5 px-4 text-right">
+                            <button onclick="openStatusModal({{ t.id }}, '{{ t.ruas_nama }}', '{{ t.status }}', '{{ t.kepadatan }}')" class="px-2.5 py-1.5 rounded-lg bg-brand-navy hover:bg-blue-900 text-white font-semibold text-[11px] transition shadow-sm">
+                                Update Status
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Update Status Cepat -->
+<div id="modal-update-status" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-6">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+            <h2 class="text-sm font-bold text-slate-900">Perbarui Status Kemacetan</h2>
+            <button type="button" onclick="document.getElementById('modal-update-status').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <form id="form-update-status" action="" method="POST" class="space-y-3.5 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Nama Ruas</label>
+                <input type="text" id="modal-ruas-nama" readonly class="w-full rounded-lg border-slate-200 bg-slate-50 text-xs px-3 py-2 font-bold text-slate-800"/>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="modal-status">Status Alur Penanganan</label>
+                <select id="modal-status" name="status" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2 font-semibold">
+                    <option value="dilaporkan">1. Dilaporkan (Menunggu Personel)</option>
+                    <option value="ditangani">2. Ditangani (Petugas di Lapangan)</option>
+                    <option value="selesai">3. Selesai (Arus Kembali Normal / Lancar)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="modal-kepadatan">Perbarui Tingkat Kepadatan</label>
+                <select id="modal-kepadatan" name="kepadatan" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2 font-semibold">
+                    <option value="macet_parah">Macet Parah (&lt;5 km/h)</option>
+                    <option value="macet">Macet (5-20 km/h)</option>
+                    <option value="padat">Padat (20-40 km/h)</option>
+                    <option value="lancar">Lancar (&gt;40 km/h)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="modal-tindakan">Tindakan Penanganan yang Diambil</label>
+                <input type="text" id="modal-tindakan" name="tindakan" placeholder="Contoh: Pengaturan manual lampu lalu lintas" class="w-full rounded-lg border-slate-300 text-xs px-3 py-2"/>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1" for="modal-catatan">Catatan Tambahan</label>
+                <textarea id="modal-catatan" name="catatan" rows="2" placeholder="Kondisi terkini di lapangan..." class="w-full rounded-lg border-slate-300 text-xs px-3 py-2"></textarea>
+            </div>
+            <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button type="button" onclick="document.getElementById('modal-update-status').classList.add('hidden')" class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium">Batal</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-brand-navy hover:bg-blue-900 text-white font-medium">Simpan Pembaruan</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const map = L.map('dishub-map').setView([-5.4132, 105.2588], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const spots = [
+            {% for t in titik_list %}
+            {
+                id: {{ t.id }},
+                ruas: "{{ t.ruas_nama }}",
+                kecamatan: "{{ t.kecamatan_nama }}",
+                lat: {{ t.latitude }},
+                lng: {{ t.longitude }},
+                kepadatan: "{{ t.kepadatan }}",
+                status: "{{ t.status }}",
+                antrean: {{ t.panjang_antrean_meter }},
+                kecepatan: {{ t.kecepatan_rata_rata_kmh }}
+            },
+            {% endfor %}
+        ];
+
+        function getColor(kepadatan) {
+            switch(kepadatan) {
+                case 'macet_parah': return '#DC2626';
+                case 'macet': return '#EA580C';
+                case 'padat': return '#EAB308';
+                default: return '#16A34A';
+            }
+        }
+
+        spots.forEach(s => {
+            const marker = L.circleMarker([s.lat, s.lng], {
+                radius: 9,
+                fillColor: getColor(s.kepadatan),
+                color: '#ffffff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.9
+            }).addTo(map);
+
+            marker.bindPopup(`
+                <div class="text-xs p-1">
+                    <p class="font-bold text-slate-900">${s.ruas}</p>
+                    <p class="text-slate-500 text-[11px]">${s.kecamatan}</p>
+                    <div class="mt-1 pt-1 border-t border-slate-200">
+                        <span class="font-semibold">Status:</span> ${s.status}<br/>
+                        <span class="font-semibold">Antrean:</span> ${s.antrean}m | 
+                        <span class="font-semibold">Kecepatan:</span> ${s.kecepatan} km/h
+                    </div>
+                </div>
+            `);
+        });
+    });
+
+    function openStatusModal(id, ruas, status, kepadatan) {
+        document.getElementById('form-update-status').action = '/dishub/titik-macet/' + id + '/status';
+        document.getElementById('modal-ruas-nama').value = ruas;
+        document.getElementById('modal-status').value = status;
+        document.getElementById('modal-kepadatan').value = kepadatan;
+        document.getElementById('modal-update-status').classList.remove('hidden');
+    }
+</script>
+{% endblock %}

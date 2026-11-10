@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}SmartTraffic - Sistem Informasi Pemantauan Lalu Lintas Kota Bandar Lampung{% endblock %}</title>
+
+    <!-- Tailwind CSS with plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            navy: '#1E3A8A',
+                            navyDark: '#0f172a',
+                            teal: '#0F766E',
+                            tealLight: '#14b8a6',
+                            maroon: '#881337',
+                            gold: '#D97706',
+                        },
+                        status: {
+                            lancar: '#16A34A',
+                            padat: '#EAB308',
+                            macet: '#EA580C',
+                            macetParah: '#DC2626',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+    <style>
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- DESKTOP & TABLET SIDEBAR (Hidden on mobile 390px, Visible on lg: 1024px+) -->
+    <aside class="hidden lg:flex fixed left-0 top-0 h-full w-64 bg-white z-50 flex-col justify-between border-r border-slate-200 shadow-sm">
+        <div class="flex flex-col">
+            <!-- Sidebar Header with dual badge -->
+            <div class="h-16 px-4 flex items-center gap-3 border-b border-slate-100 bg-slate-50/50">
+                <div class="w-9 h-9 rounded-lg bg-brand-navy flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                    ST
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-bold text-base text-brand-navy leading-tight">SmartTraffic</span>
+                    <span class="text-[11px] font-medium text-slate-500">Kota Bandar Lampung</span>
+                </div>
+            </div>
+
+            <!-- Navigation Links per Role -->
+            <nav class="flex flex-col gap-1 p-3 text-sm">
+                {% if user_role == "admin" %}
+                    <span class="px-3 pt-2 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Menu Administrasi</span>
+                    <a href="/admin/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "admin_dashboard" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                        <span>Dashboard Admin</span>
+                    </a>
+                    <a href="/admin/pengguna" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "admin_pengguna" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">group</span>
+                        <span>Manajemen Pengguna</span>
+                    </a>
+                    <a href="/admin/titik-macet" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "admin_titik_macet" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">pin_drop</span>
+                        <span>Manajemen Titik Macet</span>
+                    </a>
+                    <a href="/admin/audit" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "admin_audit" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">security</span>
+                        <span>Log Audit & Keamanan</span>
+                    </a>
+                    <a href="/admin/pengaturan" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "admin_pengaturan" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span>Pengaturan Sistem</span>
+                    </a>
+
+                {% else if user_role == "petugas_dishub" %}
+                    <span class="px-3 pt-2 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Operasional Dishub</span>
+                    <a href="/dishub/pemantauan" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "dishub_pemantauan" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">traffic</span>
+                        <span>Dashboard Pemantauan</span>
+                    </a>
+                    <a href="/dishub/input-kemacetan" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "dishub_input" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">edit_location_alt</span>
+                        <span>Input / Update Macet</span>
+                    </a>
+                    <a href="/dishub/riwayat" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "dishub_riwayat" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">history</span>
+                        <span>Riwayat Kejadian</span>
+                    </a>
+                    <a href="/dishub/rekomendasi" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "dishub_rekomendasi" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">alt_route</span>
+                        <span>Rekomendasi Penanganan</span>
+                    </a>
+
+                {% else if user_role == "polantas" %}
+                    <span class="px-3 pt-2 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Satlantas Polresta</span>
+                    <a href="/polisi/operasional" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "polisi_operasional" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">shield</span>
+                        <span>Dashboard Operasional</span>
+                    </a>
+                    <a href="/polisi/notifikasi" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "polisi_notifikasi" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">notifications_active</span>
+                        <span>Notifikasi & Peringatan</span>
+                    </a>
+                    <a href="/polisi/penugasan" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "polisi_penugasan" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">badge</span>
+                        <span>Penugasan Personel</span>
+                    </a>
+                    <a href="/polisi/laporan-lapangan" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "polisi_laporan" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">assignment</span>
+                        <span>Laporan Lapangan</span>
+                    </a>
+
+                {% else if user_role == "pimpinan" %}
+                    <span class="px-3 pt-2 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Eksekutif Daerah</span>
+                    <a href="/pimpinan/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "pimpinan_dashboard" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">analytics</span>
+                        <span>Dashboard Eksekutif</span>
+                    </a>
+                    <a href="/pimpinan/analitik" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "pimpinan_analitik" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">assessment</span>
+                        <span>Laporan & Analitik</span>
+                    </a>
+                    <a href="/pimpinan/peta" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors {% if active_menu == "pimpinan_peta" %}bg-brand-navy text-white shadow-sm{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                        <span class="material-symbols-outlined text-[20px]">map</span>
+                        <span>Peta Ringkasan Kota</span>
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer System Telemetry & Logout -->
+        <div class="p-3 bg-slate-50 border-t border-slate-200 flex flex-col gap-2">
+            <div class="bg-white rounded-lg p-2.5 border border-slate-200 text-xs">
+                <div class="flex items-center justify-between text-slate-500 mb-1">
+                    <span>Simpul Server</span>
+                    <span class="font-mono font-semibold text-brand-navy">BDL-NODE-01</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-500">
+                    <span>Status Jaringan</span>
+                    <span class="flex items-center gap-1 font-mono font-medium text-emerald-600">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        99.8% Aktif
+                    </span>
+                </div>
+            </div>
+            <a href="/logout" class="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 text-sm font-medium transition-colors">
+                <span class="material-symbols-outlined text-[18px]">logout</span>
+                <span>Keluar dari Sistem</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN WRAPPER (Offset left on lg screen for sidebar) -->
+    <div class="flex-1 flex flex-col lg:pl-64 min-w-0">
+
+        <!-- TOP INSTITUTIONAL HEADER (Fixed Top) -->
+        <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm h-16">
+            <div class="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+                
+                <!-- Left: Dual Logo (Pemkot Bandar Lampung + UTI) & Title -->
+                <div class="flex items-center gap-3">
+                    <!-- Mobile Hamburger Toggle button for navigation drawer if needed -->
+                    <button type="button" class="lg:hidden p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 focus:outline-none" onclick="document.getElementById('mobile-drawer').classList.toggle('hidden');">
+                        <span class="material-symbols-outlined text-[24px]">menu</span>
+                    </button>
+
+                    <!-- Dual Institutional Crest Badges -->
+                    <div class="flex items-center space-x-2">
+                        <img src="/static/img/logo-pemda.png" alt="Logo Pemda Kota Bandar Lampung" class="h-9 w-auto object-contain" title="Pemerintah Kota Bandar Lampung"/>
+                        <div class="h-6 w-px bg-slate-300"></div>
+                        <img src="/static/img/logo-uti.png" alt="Logo Universitas Teknokrat Indonesia" class="h-9 w-auto object-contain" title="Universitas Teknokrat Indonesia"/>
+                    </div>
+
+                    <!-- System Brand Title -->
+                    <div class="hidden sm:flex flex-col ml-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-base sm:text-lg font-extrabold text-brand-navy tracking-tight">SmartTraffic</span>
+                            <span class="text-[10px] font-bold bg-teal-100 text-brand-teal px-1.5 py-0.2 rounded border border-teal-200">ITS v2.6</span>
+                        </div>
+                        <span class="text-[11px] text-slate-500 font-medium -mt-0.5">Kota Bandar Lampung</span>
+                    </div>
+                </div>
+
+                <!-- Right: Status, Role Badge, Notification, Profile -->
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <!-- Live Server Pill -->
+                    <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-[11px] font-semibold text-emerald-800">TMC Live Terhubung</span>
+                    </div>
+
+                    <!-- Role Badge Pill -->
+                    {% if user_role == "admin" %}
+                        <span class="px-2.5 py-1 rounded-full bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold tracking-wide">
+                            ADMIN SISTEM
+                        </span>
+                    {% else if user_role == "petugas_dishub" %}
+                        <span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-900 border border-blue-200 text-xs font-bold tracking-wide">
+                            DISHUB BDL
+                        </span>
+                    {% else if user_role == "polantas" %}
+                        <span class="px-2.5 py-1 rounded-full bg-teal-100 text-teal-900 border border-teal-200 text-xs font-bold tracking-wide">
+                            SATLANTAS BDL
+                        </span>
+                    {% else if user_role == "pimpinan" %}
+                        <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold tracking-wide">
+                            PIMPINAN DAERAH
+                        </span>
+                    {% endif %}
+
+                    <!-- User Name & Avatar -->
+                    <div class="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+                        <div class="w-8 h-8 rounded-full bg-brand-navy text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                            <span class="material-symbols-outlined text-[18px]">person</span>
+                        </div>
+                        <div class="hidden xl:flex flex-col text-left">
+                            <span class="text-xs font-bold text-slate-900 leading-tight">{{ user_nama }}</span>
+                            <span class="text-[10px] text-slate-500 uppercase tracking-tight">Operator Terverifikasi</span>
+                        </div>
+                        <a href="/logout" title="Keluar" class="lg:hidden p-1.5 rounded-lg text-rose-600 hover:bg-rose-50">
+                            <span class="material-symbols-outlined text-[20px]">logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MOBILE DRAWER MENU (Hidden by default, shown on hamburger click) -->
+        <div id="mobile-drawer" class="hidden lg:hidden bg-white border-b border-slate-200 p-4 shadow-lg flex-col gap-2">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Navigasi SmartTraffic</p>
+            {% if user_role == "admin" %}
+                <a href="/admin/dashboard" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Dashboard Admin</a>
+                <a href="/admin/pengguna" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Manajemen Pengguna</a>
+                <a href="/admin/titik-macet" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Manajemen Titik Macet</a>
+                <a href="/admin/audit" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Log Audit</a>
+                <a href="/admin/pengaturan" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Pengaturan</a>
+            {% else if user_role == "petugas_dishub" %}
+                <a href="/dishub/pemantauan" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Pemantauan Lalu Lintas</a>
+                <a href="/dishub/input-kemacetan" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Input Titik Macet</a>
+                <a href="/dishub/riwayat" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Riwayat Kejadian</a>
+                <a href="/dishub/rekomendasi" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Rekomendasi Penanganan</a>
+            {% else if user_role == "polantas" %}
+                <a href="/polisi/operasional" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Dashboard Operasional</a>
+                <a href="/polisi/notifikasi" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Notifikasi & Peringatan</a>
+                <a href="/polisi/penugasan" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Penugasan Personel</a>
+                <a href="/polisi/laporan-lapangan" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Laporan Lapangan</a>
+            {% else if user_role == "pimpinan" %}
+                <a href="/pimpinan/dashboard" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Dashboard Eksekutif</a>
+                <a href="/pimpinan/analitik" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Laporan & Analitik</a>
+                <a href="/pimpinan/peta" class="flex items-center gap-2 p-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100">Peta Ringkasan</a>
+            {% endif %}
+            <div class="pt-2 border-t border-slate-100">
+                <a href="/logout" class="flex items-center gap-2 p-2 rounded-lg text-sm text-rose-600 hover:bg-rose-50 font-semibold">Keluar</a>
+            </div>
+        </div>
+
+        <!-- MAIN DYNAMIC CONTENT -->
+        <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- FOOTER WAJIB SESUAI PRD & IDENTITAS SISTEM -->
+        <footer class="w-full bg-white border-t border-slate-200 py-4 px-4 sm:px-6 lg:px-8 mt-auto shadow-sm">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+                <p class="text-xs sm:text-sm font-semibold text-slate-700">
+                    Copyright©2026 by Firman Alfasya Arief dan Dr. Erliyan Redy Susanto, M.Kom
+                </p>
+                <p class="text-[11px] text-slate-500 font-medium">
+                    Dinas Perhubungan &amp; Satlantas Polresta Bandar Lampung | Dikembangkan bersama Universitas Teknokrat Indonesia
+                </p>
+            </div>
+        </footer>
+
+        <!-- BOTTOM MOBILE NAVIGATION BAR (Visible only on mobile screen < 1024px) -->
+        <nav class="lg:hidden fixed bottom-0 inset-x-0 h-16 bg-white border-t border-slate-200 z-50 flex items-center justify-around px-2 shadow-lg">
+            {% if user_role == "admin" %}
+                <a href="/admin/dashboard" class="flex flex-col items-center justify-center text-xs {% if active_menu == "admin_dashboard" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">dashboard</span>
+                    <span class="text-[10px]">Dashboard</span>
+                </a>
+                <a href="/admin/pengguna" class="flex flex-col items-center justify-center text-xs {% if active_menu == "admin_pengguna" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">group</span>
+                    <span class="text-[10px]">Pengguna</span>
+                </a>
+                <a href="/admin/titik-macet" class="flex flex-col items-center justify-center text-xs {% if active_menu == "admin_titik_macet" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">pin_drop</span>
+                    <span class="text-[10px]">Titik Macet</span>
+                </a>
+                <a href="/admin/audit" class="flex flex-col items-center justify-center text-xs {% if active_menu == "admin_audit" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">security</span>
+                    <span class="text-[10px]">Audit</span>
+                </a>
+            {% else if user_role == "petugas_dishub" %}
+                <a href="/dishub/pemantauan" class="flex flex-col items-center justify-center text-xs {% if active_menu == "dishub_pemantauan" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">traffic</span>
+                    <span class="text-[10px]">Pantau</span>
+                </a>
+                <a href="/dishub/input-kemacetan" class="flex flex-col items-center justify-center text-xs {% if active_menu == "dishub_input" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">add_location_alt</span>
+                    <span class="text-[10px]">Input Macet</span>
+                </a>
+                <a href="/dishub/riwayat" class="flex flex-col items-center justify-center text-xs {% if active_menu == "dishub_riwayat" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">history</span>
+                    <span class="text-[10px]">Riwayat</span>
+                </a>
+                <a href="/dishub/rekomendasi" class="flex flex-col items-center justify-center text-xs {% if active_menu == "dishub_rekomendasi" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">alt_route</span>
+                    <span class="text-[10px]">Rekomendasi</span>
+                </a>
+            {% else if user_role == "polantas" %}
+                <a href="/polisi/operasional" class="flex flex-col items-center justify-center text-xs {% if active_menu == "polisi_operasional" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">shield</span>
+                    <span class="text-[10px]">Operasional</span>
+                </a>
+                <a href="/polisi/notifikasi" class="flex flex-col items-center justify-center text-xs {% if active_menu == "polisi_notifikasi" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">notifications_active</span>
+                    <span class="text-[10px]">Peringatan</span>
+                </a>
+                <a href="/polisi/penugasan" class="flex flex-col items-center justify-center text-xs {% if active_menu == "polisi_penugasan" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">badge</span>
+                    <span class="text-[10px]">Petugas</span>
+                </a>
+                <a href="/polisi/laporan-lapangan" class="flex flex-col items-center justify-center text-xs {% if active_menu == "polisi_laporan" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">assignment</span>
+                    <span class="text-[10px]">Laporan</span>
+                </a>
+            {% else if user_role == "pimpinan" %}
+                <a href="/pimpinan/dashboard" class="flex flex-col items-center justify-center text-xs {% if active_menu == "pimpinan_dashboard" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">analytics</span>
+                    <span class="text-[10px]">Ringkasan</span>
+                </a>
+                <a href="/pimpinan/analitik" class="flex flex-col items-center justify-center text-xs {% if active_menu == "pimpinan_analitik" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">assessment</span>
+                    <span class="text-[10px]">Laporan</span>
+                </a>
+                <a href="/pimpinan/peta" class="flex flex-col items-center justify-center text-xs {% if active_menu == "pimpinan_peta" %}text-brand-navy font-bold{% else %}text-slate-500{% endif %}">
+                    <span class="material-symbols-outlined text-[22px]">map</span>
+                    <span class="text-[10px]">Peta GIS</span>
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+
